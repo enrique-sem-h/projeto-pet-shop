@@ -4,13 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PetDTO } from './pet.dto';
+import { PetDTO } from '../dtos/pet.dto';
+import { randomUUID } from 'node:crypto';
 
 @Injectable()
 export class PetService {
   private pets: PetDTO[] = [];
 
   create(pet: PetDTO) {
+    pet.id = randomUUID();
     this.pets.push(pet);
     return 'success';
   }
@@ -33,7 +35,7 @@ export class PetService {
     let index = this.pets.findIndex((pet) => pet.id === id);
 
     if (index >= 0) {
-      this.pets[index] = { id, ...data };
+      this.pets[index] = { ...data, id };
       return data;
     }
 

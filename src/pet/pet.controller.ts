@@ -1,8 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { PetDTO } from './pet.dto';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { PetDTO } from '../dtos/pet.dto';
 import { PetService } from './pet.service';
 
-@Controller('pet')
+@Controller('pets')
 export class PetController {
   constructor(private readonly petServive: PetService) {}
 

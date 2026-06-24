@@ -30,3 +30,8 @@ export class TutorDTO {
   @IsInt()
   age: number;
 }
+
+export interface Identifier {
+  id?: string
+  email?: string
+}

@@ -36,5 +36,5 @@ export class PetDTO {
   age: number;
 
   @IsUUID()
-  tutor_id: string;
+  tutorId: string;
 }

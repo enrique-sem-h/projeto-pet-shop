@@ -26,7 +26,7 @@ export class TutorController {
 
   @Get('/:id')
   findById(@Param('id') id: string) {
-    return this.tutorService.findById(id);
+    return this.tutorService.findBy({id: id});
   }
 
   @Patch('/:id')

@@ -1,61 +1,101 @@
 import {
-  HttpException,
-  HttpStatus,
+  BadRequestException,
+  ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
-import { TutorDTO } from 'src/dtos/tutor.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TutorEntity } from 'src/db/entities/tutor.entity';
+import { Identifier, TutorDTO } from 'src/dtos/tutor.dto';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TutorService {
-  private tutors: TutorDTO[] = [];
+  constructor(
+    @InjectRepository(TutorEntity)
+    private readonly tutorsRepository: Repository<TutorEntity>,
+  ) {}
 
-  create(tutor: TutorDTO) {
-    tutor.id = randomUUID();
-    this.tutors.push(tutor);
-    return 'success';
+  // creates a new tutor in the database if not exists
+  async create(tutor: TutorDTO) {
+    try {
+      const registered = await this.findBy({ email: tutor.email });
+
+      if (registered) {
+        throw new ConflictException(`Tutor ${tutor.email} already registered`);
+      }
+    } catch {
+      console.log('chegou aqui');
+      const newTutor = new TutorEntity();
+      newTutor.name = tutor.name;
+      newTutor.email = tutor.email;
+      newTutor.age = tutor.age;
+      console.log(newTutor);
+
+      const { id, email } = await this.tutorsRepository.save(newTutor);
+
+      return { id, email };
+    }
   }
 
-  findAll() {
-    return this.tutors;
+  // returns all records for tutors
+  async findAll(): Promise<TutorDTO[]> {
+    const tutors = await this.tutorsRepository.find();
+
+    return tutors;
   }
 
-  findById(id: string) {
-    const tutor = this.tutors.filter((tutor) => tutor.id === id);
-
-    if (tutor.length) {
-      return tutor[0];
+  // finds a tutor in the db by id or email
+  async findBy(identifier: Identifier): Promise<TutorDTO | null> {
+    if (!identifier.id && !identifier.email) {
+      throw new BadRequestException('Please inform id or email');
     }
 
-    throw new NotFoundException(`tutor with id ${id} not found!`);
-  }
+    try {
+      const found = await this.tutorsRepository.findOne({
+        where: [{ id: identifier.id }, { email: identifier.email }],
+      });
 
-  update(id: string, data: Omit<TutorDTO, 'id'>) {
-    let index = this.tutors.findIndex((tutor) => tutor.id === id);
-
-    if (index >= 0) {
-      this.tutors[index] = { ...data, id };
-      return data;
+      if (found) {
+        return {
+          id: found.id,
+          age: found.age,
+          email: found.email,
+          name: found.name,
+        };
+      }
+    } catch {
+      throw new NotFoundException(`Tutor not found!`);
     }
 
-    throw new HttpException(
-      `tutor with id ${id} not found`,
-      HttpStatus.BAD_REQUEST,
+    throw new InternalServerErrorException(
+      'Something happened on our end, please try again!',
     );
   }
 
-  delete(id: string) {
-    let index = this.tutors.findIndex((tutor) => tutor.id === id);
+  async update(tutorId: string, data: TutorDTO): Promise<TutorDTO | null> {
+    const found = await this.findBy({ id: tutorId });
 
-    if (index >= 0) {
-      this.tutors.splice(index, 1);
-      return `tutor with id ${id} deleted successfully!`;
+    if (!found) {
+      throw new NotFoundException(`tutor ${data.email} not found!`);
     }
 
-    throw new HttpException(
-      `tutor with id ${id} not found`,
-      HttpStatus.BAD_REQUEST,
-    );
+    const { id, ...updateData } = data;
+
+    const result = await this.tutorsRepository.update(found.id, updateData);
+
+    return result.affected ? { id: tutorId, ...updateData } : null;
+  }
+
+  async delete(id: string): Promise<TutorDTO | null> {
+    const found = await this.findBy({ id: id });
+
+    if (!found) {
+      throw new NotFoundException(`tutor ${id} not found!`);
+    }
+
+    await this.tutorsRepository.delete(id);
+    return found;
   }
 }

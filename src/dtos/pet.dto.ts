@@ -21,7 +21,6 @@ export class PetDTO {
   name: string;
 
   @IsString()
-  @MinLength(4)
   @MaxLength(25)
   species: string;
 

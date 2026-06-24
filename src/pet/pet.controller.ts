@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -26,17 +27,17 @@ export class PetController {
   }
 
   @Get('/:id')
-  findById(@Param('id') id: string) {
+  findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.petServive.findById(id);
   }
 
   @Patch('/:id')
-  patchPet(@Param('id') id: string, @Body() data: PetDTO) {
+  patchPet(@Param('id',ParseUUIDPipe) id: string, @Body() data: PetDTO) {
     return this.petServive.update(id, data);
   }
 
   @Delete('/:id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id',ParseUUIDPipe) id: string) {
     return this.petServive.delete(id);
   }
 }

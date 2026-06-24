@@ -1,61 +1,101 @@
 import {
-  HttpException,
-  HttpStatus,
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PetDTO } from '../dtos/pet.dto';
-import { randomUUID } from 'node:crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PetEntity } from 'src/db/entities/pet.entity';
 
 @Injectable()
 export class PetService {
-  private pets: PetDTO[] = [];
+  constructor(
+    @InjectRepository(PetEntity)
+    private readonly petsRepository: Repository<PetEntity>,
+  ) {}
 
-  create(pet: PetDTO) {
-    pet.id = randomUUID();
-    this.pets.push(pet);
-    return 'success';
+  async create(pet: PetDTO): Promise<Partial<PetDTO> | null> {
+    const found = await this.findByTutor(pet.tutorId);
+
+    // verify if said pet already exists
+    if (found && found.some((p) => p.name === pet.name)) {
+      throw new ConflictException(
+        `Pet ${pet.name} already registered for tutor`,
+      );
+    }
+
+    try {
+      // insert pet
+      const newPet = new PetEntity();
+      newPet.name = pet.name;
+      newPet.species = pet.species;
+      newPet.breed = pet.breed;
+      newPet.age = pet.age;
+      newPet.tutorId = pet.tutorId;
+
+      const { id, name } = await this.petsRepository.save(newPet);
+      return { id, name };
+    } catch {
+      throw new BadRequestException(
+        'Unable to save new pet, please check tutorId',
+      );
+    }
   }
 
-  findAll() {
-    return this.pets;
+  async findAll(): Promise<PetDTO[] | null> {
+    return await this.petsRepository.find();
   }
 
-  findById(id: string) {
-    const pet = this.pets.filter((pet) => pet.id === id);
+  async findById(id: string): Promise<PetDTO | null> {
+    const found = await this.petsRepository.findOne({
+      where: { id: id },
+    });
 
-    if (pet.length) {
-      return pet[0];
+    if (found) {
+      return found;
     }
 
     throw new NotFoundException(`Pet with id ${id} not found!`);
   }
 
-  update(id: string, data: Omit<PetDTO, 'id'>) {
-    let index = this.pets.findIndex((pet) => pet.id === id);
+  async findByTutor(tutorId: string): Promise<PetDTO[] | null> {
+    const found = await this.petsRepository.find({
+      where: { tutorId: tutorId },
+    });
 
-    if (index >= 0) {
-      this.pets[index] = { ...data, id };
-      return data;
+    if (found) {
+      return found;
     }
 
-    throw new HttpException(
-      `Pet with id ${id} not found`,
-      HttpStatus.BAD_REQUEST,
-    );
+    throw new NotFoundException(`Tutor with id ${tutorId} not found!`);
   }
 
-  delete(id: string) {
-    let index = this.pets.findIndex((pet) => pet.id === id);
+  async update(petId: string, data: PetDTO): Promise<PetDTO | null> {
+    const found = await this.findById(petId);
 
-    if (index >= 0) {
-      this.pets.splice(index, 1);
-      return `pet with id ${id} deleted successfully!`;
+    if (!found) {
+      throw new NotFoundException(`Pet not found!`);
     }
 
-    throw new HttpException(
-      `Pet with id ${id} not found`,
-      HttpStatus.BAD_REQUEST,
-    );
+    const { id, tutorId, ...updateData } = data;
+
+    const result = await this.petsRepository.update(found.id, updateData);
+
+    return result.affected
+      ? { id: petId, ...updateData, tutorId: found.tutorId }
+      : null;
+  }
+
+  async delete(id: string): Promise<PetDTO | null> {
+    const found = await this.findById(id);
+
+    if (!found) {
+      throw new NotFoundException(`Pet not Found!`);
+    }
+
+    await this.petsRepository.delete(id);
+    return found;
   }
 }

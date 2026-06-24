@@ -26,12 +26,10 @@ export class TutorService {
         throw new ConflictException(`Tutor ${tutor.email} already registered`);
       }
     } catch {
-      console.log('chegou aqui');
       const newTutor = new TutorEntity();
       newTutor.name = tutor.name;
       newTutor.email = tutor.email;
       newTutor.age = tutor.age;
-      console.log(newTutor);
 
       const { id, email } = await this.tutorsRepository.save(newTutor);
 
@@ -52,26 +50,20 @@ export class TutorService {
       throw new BadRequestException('Please inform id or email');
     }
 
-    try {
-      const found = await this.tutorsRepository.findOne({
-        where: [{ id: identifier.id }, { email: identifier.email }],
-      });
+    const found = await this.tutorsRepository.findOne({
+      where: [{ id: identifier.id }, { email: identifier.email }],
+    });
 
-      if (found) {
-        return {
-          id: found.id,
-          age: found.age,
-          email: found.email,
-          name: found.name,
-        };
-      }
-    } catch {
-      throw new NotFoundException(`Tutor not found!`);
+    if (found) {
+      return {
+        id: found.id,
+        age: found.age,
+        email: found.email,
+        name: found.name,
+      };
     }
 
-    throw new InternalServerErrorException(
-      'Something happened on our end, please try again!',
-    );
+    throw new NotFoundException('Tutor not found! check fields and try again');
   }
 
   async update(tutorId: string, data: TutorDTO): Promise<TutorDTO | null> {

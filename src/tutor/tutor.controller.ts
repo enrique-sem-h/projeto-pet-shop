@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -25,17 +26,17 @@ export class TutorController {
   }
 
   @Get('/:id')
-  findById(@Param('id') id: string) {
-    return this.tutorService.findBy({id: id});
+  findById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.tutorService.findBy({ id: id });
   }
 
   @Patch('/:id')
-  patchPet(@Param('id') id: string, @Body() data: TutorDTO) {
+  patchPet(@Param('id', ParseUUIDPipe) id: string, @Body() data: TutorDTO) {
     return this.tutorService.update(id, data);
   }
 
   @Delete('/:id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.tutorService.delete(id);
   }
 }

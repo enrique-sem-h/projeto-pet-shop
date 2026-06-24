@@ -8,7 +8,7 @@ RUN npm cache clean --force
 RUN npm install
 COPY . .
 
-ENV path=../.env.development
+ENV path=../.env
 
 EXPOSE 3000
 

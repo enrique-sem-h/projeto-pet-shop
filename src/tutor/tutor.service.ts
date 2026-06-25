@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TutorEntity } from 'src/db/entities/tutor.entity';
+import { PetDTO } from 'src/dtos/pet.dto';
 import { Identifier, TutorDTO } from 'src/dtos/tutor.dto';
 import { Repository } from 'typeorm';
 
@@ -52,14 +53,19 @@ export class TutorService {
 
     const found = await this.tutorsRepository.findOne({
       where: [{ id: identifier.id }, { email: identifier.email }],
+      relations: {
+        pets: true,
+      },
     });
 
     if (found) {
+      // const pets = await this.findPets(found.id);
       return {
         id: found.id,
         age: found.age,
         email: found.email,
         name: found.name,
+        pets: found.pets ?? [],
       };
     }
 
@@ -89,5 +95,21 @@ export class TutorService {
 
     await this.tutorsRepository.delete(id);
     return found;
+  }
+
+  private async findPets(tutorId): Promise<PetDTO[] | null> {
+    const query = this.tutorsRepository
+      .createQueryBuilder('tutor')
+      .leftJoinAndSelect('tutor.pets', 'pet')
+      .where('tutor.id = :tutorId', { tutorId });
+
+    const result = await query.getRawOne();
+
+    console.log(result);
+    if (result) {
+      return result.pets;
+    }
+
+    return null;
   }
 }

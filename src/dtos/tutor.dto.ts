@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEmail,
   IsInt,
   IsNumber,
@@ -10,6 +11,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { PetDTO } from './pet.dto';
 
 export class TutorDTO {
   @IsUUID()
@@ -29,9 +31,13 @@ export class TutorDTO {
   @Max(99)
   @IsInt()
   age: number;
+
+  @IsOptional()
+  @IsArray()
+  pets: PetDTO[];
 }
 
 export interface Identifier {
-  id?: string
-  email?: string
+  id?: string;
+  email?: string;
 }

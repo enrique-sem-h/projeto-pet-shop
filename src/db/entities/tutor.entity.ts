@@ -2,9 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { PetEntity } from './pet.entity';
 
 @Entity({ name: 'tutors' })
 export class TutorEntity {
@@ -24,4 +25,7 @@ export class TutorEntity {
     name: 'created_at',
   })
   createdAt: Date;
+
+  @OneToMany(() => PetEntity, (pet) => pet.tutorId)
+  pets: PetEntity[];
 }

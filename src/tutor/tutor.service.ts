@@ -20,22 +20,23 @@ export class TutorService {
 
   // creates a new tutor in the database if not exists
   async create(tutor: TutorDTO) {
+    let registered: TutorDTO | null = null;
+
     try {
-      const registered = await this.findBy({ email: tutor.email });
+      registered = await this.findBy({ email: tutor.email });
+    } catch {}
 
-      if (registered) {
-        throw new ConflictException(`Tutor ${tutor.email} already registered`);
-      }
-    } catch {
-      const newTutor = new TutorEntity();
-      newTutor.name = tutor.name;
-      newTutor.email = tutor.email;
-      newTutor.age = tutor.age;
-
-      const { id, email } = await this.tutorsRepository.save(newTutor);
-
-      return { id, email };
+    if (registered) {
+      throw new ConflictException(`${tutor.email} is already registered`);
     }
+    const newTutor = new TutorEntity();
+    newTutor.name = tutor.name;
+    newTutor.email = tutor.email;
+    newTutor.age = tutor.age;
+
+    const { id, email } = await this.tutorsRepository.save(newTutor);
+
+    return { id, email };
   }
 
   // returns all records for tutors

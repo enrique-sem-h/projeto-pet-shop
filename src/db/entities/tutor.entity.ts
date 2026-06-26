@@ -26,6 +26,6 @@ export class TutorEntity {
   })
   createdAt: Date;
 
-  @OneToMany(() => PetEntity, (pet) => pet.tutorId)
+  @OneToMany(() => PetEntity, (pet) => pet.tutorId, { onDelete: 'CASCADE' })
   pets: PetEntity[];
 }

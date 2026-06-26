@@ -26,7 +26,7 @@ export class PetEntity {
   @Column({ type: 'int' })
   age: number;
 
-  @ManyToOne(() => TutorEntity, (tutor) => tutor.pets)
+  @ManyToOne(() => TutorEntity, (tutor) => tutor.pets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tutor_id' })
   @Column({ type: 'varchar', name: 'tutor_id', foreignKeyConstraintName: 'id' })
   tutorId: string;

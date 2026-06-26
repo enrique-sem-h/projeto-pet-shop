@@ -8,7 +8,6 @@ import { PetDTO } from '../dtos/pet.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PetEntity } from 'src/db/entities/pet.entity';
-import { TutorEntity } from 'src/db/entities/tutor.entity';
 import { TutorService } from 'src/tutor/tutor.service';
 
 @Injectable()

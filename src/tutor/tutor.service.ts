@@ -21,11 +21,10 @@ export class TutorService {
   // creates a new tutor in the database if not exists
   async create(tutor: TutorDTO) {
     let registered: TutorDTO | null = null;
-
     try {
       registered = await this.findBy({ email: tutor.email });
     } catch {}
-
+    
     if (registered) {
       throw new ConflictException(`${tutor.email} is already registered`);
     }
@@ -33,7 +32,7 @@ export class TutorService {
     newTutor.name = tutor.name;
     newTutor.email = tutor.email;
     newTutor.age = tutor.age;
-
+    
     const { id, email } = await this.tutorsRepository.save(newTutor);
 
     return { id, email };
@@ -98,7 +97,7 @@ export class TutorService {
     return found;
   }
 
-  private async findPets(tutorId): Promise<PetDTO[] | null> {
+  private async findPets(tutorId: string): Promise<PetDTO[] | null> {
     const query = this.tutorsRepository
       .createQueryBuilder('tutor')
       .leftJoinAndSelect('tutor.pets', 'pet')

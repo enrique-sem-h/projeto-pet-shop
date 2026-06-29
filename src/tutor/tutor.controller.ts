@@ -16,8 +16,8 @@ export class TutorController {
   constructor(private readonly tutorService: TutorService) {}
 
   @Post()
-  create(@Body() pet: TutorDTO) {
-    return this.tutorService.create(pet);
+  create(@Body() tutor: TutorDTO) {
+    return this.tutorService.create(tutor);
   }
 
   @Get()
@@ -31,7 +31,7 @@ export class TutorController {
   }
 
   @Patch('/:id')
-  patchPet(@Param('id', ParseUUIDPipe) id: string, @Body() data: TutorDTO) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() data: TutorDTO) {
     return this.tutorService.update(id, data);
   }
 

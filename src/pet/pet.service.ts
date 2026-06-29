@@ -48,7 +48,7 @@ export class PetService {
     }
   }
 
-  async findAll(): Promise<PetDTO[] | null> {
+  async findAll(): Promise<PetDTO[]> {
     return await this.petsRepository.find();
   }
 

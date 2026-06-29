@@ -9,7 +9,7 @@ describe('TutorController', () => {
   let service: TutorService;
 
   const mockedTutor: TutorDTO = {
-    id: 'uashc-ds-csaw',
+    id: 'generated-id',
     age: 16,
     email: 'mocked@tutor.com',
     name: 'Mock Jackson',
@@ -17,9 +17,13 @@ describe('TutorController', () => {
   };
 
   const mockService = {
-    create: jest.fn().mockResolvedValue(mockedTutor),
+    create: jest.fn().mockImplementation(async (dto) => ({
+      id: 'generated-id',
+      ...dto,
+      pets: [],
+    })),
     findAll: jest.fn().mockResolvedValue([mockedTutor]),
-    findBy: jest.fn().mockResolvedValue([mockedTutor]),
+    findBy: jest.fn().mockResolvedValue(mockedTutor),
     update: jest.fn().mockResolvedValue(mockedTutor),
     delete: jest.fn().mockResolvedValue(mockedTutor),
   };
@@ -49,18 +53,36 @@ describe('TutorController', () => {
   });
 
   describe('create', () => {
-    it('should create and return a new tutor', async () => {
-      const dto: TutorDTO = { name: 'Enrique', email: 'e2@email.com', age: 1 };
+    it('should call service to create and return a new tutor', async () => {
+      const dto: TutorDTO = {
+        name: 'Mock Jackson',
+        email: 'mocked@tutor.com',
+        age: 16,
+      };
 
       const result = await controller.create(dto);
 
-      console.log(result);
-      console.log(dto);
-      
-
-      expect(result).toEqual(mockedTutor);
+      expect(service.create).toBeDefined();
       expect(service.create).toHaveBeenCalledWith(dto);
       expect(service.create).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockedTutor);
+    });
+  });
+
+  describe('finds', () => {
+    it('should call service to find all users', async () => {
+      const result = await controller.findAll();
+
+      expect(service.findAll).toHaveBeenCalled();
+      expect(service.findAll).toHaveReturned();
+      expect(result).toEqual(expect.any(Array));
+    });
+    it('should call service to find users by id', async () => {
+      const result = await controller.findById('generated-id');
+
+      expect(service.findBy).toHaveBeenCalledTimes(1);
+      expect(service.findBy).toHaveBeenCalledWith({ id: 'generated-id' });
+      expect(service.findBy).resolves.toBe(mockedTutor);
     });
   });
 });

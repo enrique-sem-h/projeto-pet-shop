@@ -32,12 +32,12 @@ export class PetController {
   }
 
   @Patch('/:id')
-  patchPet(@Param('id',ParseUUIDPipe) id: string, @Body() data: PetDTO) {
+  patchPet(@Param('id', ParseUUIDPipe) id: string, @Body() data: PetDTO) {
     return this.petServive.update(id, data);
   }
 
   @Delete('/:id')
-  delete(@Param('id',ParseUUIDPipe) id: string) {
+  delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.petServive.delete(id);
   }
 }

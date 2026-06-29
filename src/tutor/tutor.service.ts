@@ -24,7 +24,7 @@ export class TutorService {
     try {
       registered = await this.findBy({ email: tutor.email });
     } catch {}
-    
+
     if (registered) {
       throw new ConflictException(`${tutor.email} is already registered`);
     }
@@ -32,7 +32,7 @@ export class TutorService {
     newTutor.name = tutor.name;
     newTutor.email = tutor.email;
     newTutor.age = tutor.age;
-    
+
     const { id, email } = await this.tutorsRepository.save(newTutor);
 
     return { id, email };

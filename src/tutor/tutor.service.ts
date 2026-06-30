@@ -117,7 +117,6 @@ export class TutorService {
 
     const result = await query.getRawOne();
 
-    console.log(result);
     if (result) {
       return result.pets;
     }

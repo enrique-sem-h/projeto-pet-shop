@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PetDTO } from '../dtos/pet.dto';
@@ -19,7 +20,11 @@ export class PetService {
   ) {}
 
   async create(pet: PetDTO): Promise<Partial<PetDTO> | null> {
-    const found = await this.findByTutor(pet.tutorId);
+    let found: PetDTO[] | null = null;
+
+    try {
+      found = await this.findByTutor(pet.tutorId);
+    } catch {}
 
     // verify if said pet already exists
     if (found && found.some((p) => p.name === pet.name)) {
@@ -76,7 +81,10 @@ export class PetService {
     throw new NotFoundException(`Tutor with id ${tutorId} not found!`);
   }
 
-  async update(petId: string, data: PetDTO): Promise<PetDTO | null> {
+  async update(
+    petId: string,
+    data: Partial<PetDTO>,
+  ): Promise<Partial<PetDTO> | null> {
     const found = await this.findById(petId);
 
     if (!found) {
@@ -87,9 +95,13 @@ export class PetService {
 
     const result = await this.petsRepository.update(found.id, updateData);
 
-    return result.affected
-      ? { id: petId, ...updateData, tutorId: found.tutorId }
-      : null;
+    if (result.affected) {
+      return { id: petId, ...updateData, tutorId: found.tutorId };
+    }
+
+    throw new InternalServerErrorException(
+      'Houve um erro, por favor tente novamente',
+    );
   }
 
   async delete(id: string): Promise<PetDTO | null> {

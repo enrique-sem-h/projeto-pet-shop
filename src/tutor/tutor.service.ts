@@ -76,10 +76,13 @@ export class TutorService {
     tutorId: string,
     data: Partial<TutorDTO>,
   ): Promise<Partial<TutorDTO> | null> {
-    const found = await this.findBy({ id: tutorId });
-
+    let found: TutorDTO | null = null;
+    try {
+      found = await this.findBy({ id: tutorId });
+    } catch { }
+    
     if (!found) {
-      throw new NotFoundException(`tutor ${data.email} not found!`);
+      throw new NotFoundException(`tutor ${tutorId} not found!`);
     }
 
     const { id, ...updateData } = data;

@@ -72,7 +72,10 @@ export class TutorService {
     throw new NotFoundException('Tutor not found! check fields and try again');
   }
 
-  async update(tutorId: string, data: TutorDTO): Promise<TutorDTO | null> {
+  async update(
+    tutorId: string,
+    data: Partial<TutorDTO>,
+  ): Promise<Partial<TutorDTO> | null> {
     const found = await this.findBy({ id: tutorId });
 
     if (!found) {
@@ -83,7 +86,13 @@ export class TutorService {
 
     const result = await this.tutorsRepository.update(found.id, updateData);
 
-    return result.affected ? { id: tutorId, ...updateData } : null;
+    if (result.affected) {
+      return { id: tutorId, ...updateData };
+    }
+
+    throw new InternalServerErrorException(
+      'Houve um erro, por favor tente novamente',
+    );
   }
 
   async delete(id: string): Promise<TutorDTO | null> {

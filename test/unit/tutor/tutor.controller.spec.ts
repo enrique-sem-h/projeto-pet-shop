@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TutorController } from '../../../src/tutor/tutor.controller';
 import { TutorService } from 'src/tutor/tutor.service';
-import { TutorEntity } from 'src/db/entities/tutor.entity';
 import { TutorDTO } from 'src/dtos/tutor.dto';
 
 describe('TutorController', () => {
@@ -100,7 +99,6 @@ describe('TutorController', () => {
         email: 'new@email.com',
       };
       const result = await controller.update('generated-id', dto);
-      console.log(result);
 
       expect(service.update).toHaveBeenCalledTimes(1);
       expect(service.update).toHaveBeenCalledWith('generated-id', dto);

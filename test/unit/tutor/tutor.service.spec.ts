@@ -32,7 +32,6 @@ describe('TutorService', () => {
       affected: 1,
     }),
     delete: jest.fn(),
-    createQueryBuilder: jest.fn(),
   });
 
   beforeEach(async () => {
@@ -122,7 +121,7 @@ describe('TutorService', () => {
       expect(service.findBy({})).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw a not found if tutor not exists', async () => {
+    it('should throw a not found if tutor doesnt exist', async () => {
       repository.findOne?.mockResolvedValue(null);
 
       const id = {
@@ -185,7 +184,7 @@ describe('TutorService', () => {
   });
 
   describe('delete', () => {
-    it('should delete and return a user from the database', async () => {
+    it('should delete and return a tutor from the database', async () => {
       const id = 'generated-uuid';
 
       const result = await service.delete(id);

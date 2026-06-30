@@ -8,10 +8,18 @@ describe('TutorController', () => {
   let controller: TutorController;
   let service: TutorService;
 
-  const mockedTutor: TutorDTO = {
+  const tutorMock: TutorDTO = {
     id: 'generated-id',
     age: 16,
     email: 'mocked@tutor.com',
+    name: 'Mock Jackson',
+    pets: [],
+  };
+
+  const updatedTutorMock: TutorDTO = {
+    id: 'generated-id',
+    age: 16,
+    email: 'new@email.com',
     name: 'Mock Jackson',
     pets: [],
   };
@@ -22,10 +30,10 @@ describe('TutorController', () => {
       ...dto,
       pets: [],
     })),
-    findAll: jest.fn().mockResolvedValue([mockedTutor]),
-    findBy: jest.fn().mockResolvedValue(mockedTutor),
-    update: jest.fn().mockResolvedValue(mockedTutor),
-    delete: jest.fn().mockResolvedValue(mockedTutor),
+    findAll: jest.fn().mockResolvedValue([tutorMock]),
+    findBy: jest.fn().mockResolvedValue(tutorMock),
+    update: jest.fn().mockResolvedValue(updatedTutorMock),
+    delete: jest.fn().mockResolvedValue(tutorMock),
   };
 
   beforeEach(async () => {
@@ -65,11 +73,11 @@ describe('TutorController', () => {
       expect(service.create).toBeDefined();
       expect(service.create).toHaveBeenCalledWith(dto);
       expect(service.create).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockedTutor);
+      expect(result).toEqual(tutorMock);
     });
   });
 
-  describe('finds', () => {
+  describe('read', () => {
     it('should call service to find all users', async () => {
       const result = await controller.findAll();
 
@@ -78,11 +86,35 @@ describe('TutorController', () => {
       expect(result).toEqual(expect.any(Array));
     });
     it('should call service to find users by id', async () => {
-      const result = await controller.findById('generated-id');
+      await controller.findById('generated-id');
 
       expect(service.findBy).toHaveBeenCalledTimes(1);
       expect(service.findBy).toHaveBeenCalledWith({ id: 'generated-id' });
-      expect(service.findBy).resolves.toBe(mockedTutor);
+      expect(service.findBy).resolves.toBe(tutorMock);
+    });
+  });
+
+  describe('update', () => {
+    it('should call service to update data for tutor', async () => {
+      const dto = {
+        email: 'new@email.com',
+      };
+      const result = await controller.update('generated-id', dto);
+      console.log(result);
+
+      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(service.update).toHaveBeenCalledWith('generated-id', dto);
+      expect(result).toEqual(updatedTutorMock);
+    });
+  });
+
+  describe('delete', () => {
+    it('should call service to delete tutor', async () => {
+      const result = await controller.delete('generated-id');
+
+      expect(service.delete).toHaveBeenCalledTimes(1);
+      expect(service.delete).toHaveBeenCalledWith('generated-id');
+      expect(service.delete).resolves.toBe(tutorMock);
     });
   });
 });

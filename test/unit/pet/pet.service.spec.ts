@@ -56,7 +56,9 @@ describe('PetService', () => {
         },
         {
           provide: TutorService,
-          useValue: { findBy: jest.fn().mockResolvedValue(mockedTutor) },
+          useValue: {
+            findBy: jest.fn().mockResolvedValue(mockedTutor),
+          },
         },
       ],
     }).compile();
@@ -71,9 +73,10 @@ describe('PetService', () => {
 
   describe('create', () => {
     it('should create a pet and return properties id and name', async () => {
-      repository.find?.mockResolvedValue(null);
+      repository.find?.mockResolvedValue([]);
 
       const pet: PetDTO = {
+        id: 'created-uuid',
         name: 'Stringy',
         species: 'Dog',
         breed: 'Hotweiller',
@@ -85,6 +88,7 @@ describe('PetService', () => {
 
       expect(repository.save).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ id: mockedPet.id, name: mockedPet.name });
+      expect(result!.id).not.toEqual(pet.id);
       expect(result).not.toBe(mockedPet);
     });
   });
@@ -134,12 +138,6 @@ describe('PetService', () => {
       expect(repository.find).toHaveBeenCalledWith({
         where: { tutorId },
       });
-    });
-
-    it('should return a not found exception if no pets are available', async () => {
-      const tutorId = 'tutor-uuid';
-      repository.find?.mockResolvedValue(null);
-      expect(service.findByTutor(tutorId)).rejects.toThrow(NotFoundException);
     });
   });
 

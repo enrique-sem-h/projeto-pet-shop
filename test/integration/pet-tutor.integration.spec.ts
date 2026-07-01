@@ -43,6 +43,7 @@ describe('integration between Pet and Tutor modules', () => {
       findOne: jest.fn().mockResolvedValue(mockedTutor),
     };
 
+    // PetModule already imports TutorModule, so we can use it to test the integration between the two modules
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PetModule],
     })

@@ -20,20 +20,20 @@ export class PetService {
   ) {}
 
   async create(pet: PetDTO): Promise<Partial<PetDTO> | null> {
-    let found: PetDTO[] | null = null;
+    const tutor = await this.tutorService.findBy({ id: pet.tutorId });
 
-    try {
-      found = await this.findByTutor(pet.tutorId);
-    } catch {}
+    if (!tutor) {
+      throw new NotFoundException(`Tutor with id ${pet.tutorId} not found!`);
+    }
+
+    const found = await this.findByTutor(pet.tutorId);
 
     // verify if said pet already exists
-    if (found && found.some((p) => p.name === pet.name)) {
+    if (found.some((p) => p.name === pet.name && p.species === pet.species)) {
       throw new ConflictException(
         `Pet ${pet.name} already registered for tutor`,
       );
     }
-
-    const tutor = await this.tutorService.findBy({ id: pet.tutorId });
 
     try {
       // insert pet
@@ -69,16 +69,12 @@ export class PetService {
     throw new NotFoundException(`Pet with id ${id} not found!`);
   }
 
-  async findByTutor(tutorId: string): Promise<PetDTO[] | null> {
+  async findByTutor(tutorId: string): Promise<PetDTO[]> {
     const found = await this.petsRepository.find({
       where: { tutorId: tutorId },
     });
 
-    if (found) {
-      return found;
-    }
-
-    throw new NotFoundException(`Tutor with id ${tutorId} not found!`);
+    return found;
   }
 
   async update(

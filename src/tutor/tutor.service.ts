@@ -79,8 +79,8 @@ export class TutorService {
     let found: TutorDTO | null = null;
     try {
       found = await this.findBy({ id: tutorId });
-    } catch { }
-    
+    } catch {}
+
     if (!found) {
       throw new NotFoundException(`tutor ${tutorId} not found!`);
     }
@@ -107,20 +107,5 @@ export class TutorService {
 
     await this.tutorsRepository.delete(id);
     return found;
-  }
-
-  private async findPets(tutorId: string): Promise<PetDTO[] | null> {
-    const query = this.tutorsRepository
-      .createQueryBuilder('tutor')
-      .leftJoinAndSelect('tutor.pets', 'pet')
-      .where('tutor.id = :tutorId', { tutorId });
-
-    const result = await query.getRawOne();
-
-    if (result) {
-      return result.pets;
-    }
-
-    return null;
   }
 }

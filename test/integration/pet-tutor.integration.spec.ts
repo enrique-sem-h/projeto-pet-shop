@@ -1,3 +1,4 @@
+import { MailerModule, MailerService } from '@nestjs-modules/mailer';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -45,7 +46,14 @@ describe('integration between Pet and Tutor modules', () => {
 
     // PetModule already imports TutorModule, so we can use it to test the integration between the two modules
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [PetModule],
+      imports: [
+        PetModule,
+        MailerModule.forRoot({
+          transport: {
+            json: true,
+          },
+        }),
+      ],
     })
       .overrideProvider(getRepositoryToken(PetEntity))
       .useValue(petRepositoryMock)

@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   ConflictException,
@@ -16,6 +17,7 @@ export class TutorService {
   constructor(
     @InjectRepository(TutorEntity)
     private readonly tutorsRepository: Repository<TutorEntity>,
+    private readonly tutorsMailer: MailerService,
   ) {}
 
   // creates a new tutor in the database if not exists
@@ -34,6 +36,12 @@ export class TutorService {
     newTutor.age = tutor.age;
 
     const { id, email } = await this.tutorsRepository.save(newTutor);
+
+    await this.tutorsMailer.sendMail({
+      to: email,
+      subject: `Welcome ${newTutor.name}`,
+      text: `Hello ${newTutor.name}, Welcome to our Pet Shop!\n Your registration was successful!`,
+    });
 
     return { id, email };
   }
@@ -106,6 +114,12 @@ export class TutorService {
     }
 
     await this.tutorsRepository.delete(id);
+    await this.tutorsMailer.sendMail({
+      to: found.email,
+      subject: 'We are so sad to see you go :(',
+      text: `Hello ${found.name}, We are sad that you decided to delete you account\nWe understand if you need some time from us. However if it was something we did or can do to improve your experience, please let us know at fake-review.link.com`,
+    });
+
     return found;
   }
 }

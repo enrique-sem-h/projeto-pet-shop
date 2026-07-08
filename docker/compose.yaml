@@ -25,5 +25,19 @@ services:
       - /app/node_modules
     command: npm run start:dev
 
+  maildev:
+    container_name: maildev
+    image: maildev/maildev:latest
+    ports:
+      - '1080:1080'
+      - '1025:1025'
+    environment:
+      - MAILDEV_MAIL_DIRECTORY=/data/mail
+    user: root
+    volumes:
+      - maildev_data:/home/maildev/data
+
 volumes:
   postgres_data:
+  maildev_data:
+    driver: local

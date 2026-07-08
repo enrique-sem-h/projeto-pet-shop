@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   InternalServerErrorException,
@@ -15,6 +16,7 @@ type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 describe('TutorService', () => {
   let service: TutorService;
   let repository: MockRepository<TutorEntity>;
+  let mailerService: MailerService;
 
   const mockedTutor: TutorDTO = {
     id: 'generated-uuid',
@@ -42,11 +44,16 @@ describe('TutorService', () => {
           provide: getRepositoryToken(TutorEntity),
           useValue: mockTutorRepository(),
         },
+        {
+          provide: MailerService,
+          useValue: { sendMail: jest.fn() },
+        },
       ],
     }).compile();
 
     service = module.get<TutorService>(TutorService);
     repository = module.get(getRepositoryToken(TutorEntity));
+    mailerService = module.get<MailerService>(MailerService);
   });
 
   it('should be defined', () => {
@@ -70,6 +77,27 @@ describe('TutorService', () => {
       expect(repository.save).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ id: mockedTutor.id, email: mockedTutor.email });
       expect(result).not.toBe(mockedTutor);
+    });
+
+    it('should send a welcome email', async () => {
+      repository.findOne?.mockResolvedValue(null);
+
+      const params: TutorDTO = {
+        id: 'fake-id',
+        name: 'Mock Jackson',
+        email: 'mock@create.com',
+        age: 23,
+        pets: [],
+      };
+
+      await service.create(params);
+
+      expect(mailerService.sendMail).toHaveBeenCalledTimes(1);
+      expect(mailerService.sendMail).toHaveBeenCalledWith({
+        to: params.email,
+        subject: `Welcome ${params.name}`,
+        text: `Hello ${params.name}, Welcome to our Pet Shop!\n Your registration was successful!`,
+      });
     });
   });
 
@@ -192,6 +220,19 @@ describe('TutorService', () => {
       expect(result).toEqual(mockedTutor);
       expect(repository.delete).toHaveBeenCalledWith(id);
       expect(repository.delete).toHaveBeenCalledTimes(1);
+    });
+
+    it('should send a goodbye email', async () => {
+      const id = 'generated-uuid';
+
+      const result = await service.delete(id);
+
+      expect(mailerService.sendMail).toHaveBeenCalledTimes(1);
+      expect(mailerService.sendMail).toHaveBeenCalledWith({
+        to: mockedTutor.email,
+        subject: 'We are so sad to see you go :(',
+        text: `Hello ${mockedTutor.name}, We are sad that you decided to delete you account\nWe understand if you need some time from us. However if it was something we did or can do to improve your experience, please let us know at fake-review.link.com`,
+      });
     });
   });
 });

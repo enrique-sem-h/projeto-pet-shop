@@ -4,7 +4,8 @@ import { AppService } from './app.service';
 import { PetModule } from 'src/pet/pet.module';
 import { TutorModule } from 'src/tutor/tutor.module';
 import { DbModule } from 'src/db/db.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -12,6 +13,19 @@ import { ConfigModule } from '@nestjs/config';
     TutorModule,
     DbModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    MailerModule.forRootAsync({
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_HOST'),
+          port: configService.get<string>('MAIL_PORT'),
+          secure: false,
+        },
+        defaults: {
+          from: configService.get<string>('MAIL_FROM'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
